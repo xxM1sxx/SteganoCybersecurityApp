@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encode and Decode</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/particles.js"></script>
+</head>
+<body>
+    <div id="particles-js"></div>
+    <a href="{{ url_for('index') }}" style="position: absolute; top: 10px; left: 10px; padding: 0.5rem 1rem; background-color: #294ee3; color: white; border: none; border-radius: 5px; cursor: pointer; text-decoration: none;">Back</a>
+    <h1>Encryption</h1>
+    <div class="tabs">
+        <button class="tab active" onclick="switchTab('cryptography')">Cryptography</button>
+        <button class="tab" onclick="switchTab('steganography')">Steganography</button>
+    </div>
+
+    <div id="cryptography" class="form-container active">
+        <form id="cryptForm" onsubmit="handleCryptSubmit(event)">
+            <div>
+                <label for="crypttext">Plain Text Input:</label>
+                <input type="text" id="crypttext" name="text" placeholder="Enter text to encryption" required>
+            </div>
+            <div>
+                <label for="cryptKey">Key Input:</label>
+                <input type="text" id="cryptKey" name="key" placeholder="Enter number of key" required>
+            </div>
+            <button type="submit">Submit</button>
+        </form>
+        <div id="cryptResult" style="margin-top: 20px; display: none;">
+            <h3>Hasil Enkripsi:</h3>
+            <p>Teks Terenkripsi: <span id="encryptedText"></span></p>
+        </div>
+    </div>
+
+    <div id="steganography" class="form-container">
+        <form id="steganoForm" onsubmit="handleSteganoSubmit(event)">
+            <div>
+                <label for="steganotext">Plain Text Input:</label>
+                <input type="text" id="steganotext" name="text" placeholder="Masukkan teks untuk dienkripsi" required>
+            </div>
+            <div>
+                <label for="steganoPhoto">Photo Input:</label>
+                <input type="file" id="steganoPhoto" name="image" accept="image/*" required>
+            </div>
+            <button type="submit">Submit</button>
+        </form>
+        <div id="steganoResult" style="margin-top: 20px; display: none;">
+            <h3>Hasil Steganografi:</h3>
+            <img id="resultImage" style="max-width: 300px;">
+            <br>
+            <a id="downloadLink" download="stegano_result.png" class="download-button">Download Gambar</a>
+        </div>
+    </div>
+
+    <script>
+        particlesJS.load('particles-js', "{{ url_for('static', filename='particles.json') }}", function() {
+            console.log('particles.js loaded');
+        });
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.form-container').forEach(form => form.classList.remove('active'));
+
+            document.querySelector(`[onclick="switchTab('${tabId}')"]`).classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        async function handleCryptSubmit(event) {
+            event.preventDefault();
+            const form = event.target;
+            const formData = new FormData(form);
+
+            try {
+                const response = await fetch('/encrypt', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                
+                document.getElementById('encryptedText').textContent = data.encrypted_text;
+                document.getElementById('cryptResult').style.display = 'block';
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan saat melakukan enkripsi');
+            }
+        }
+
+        async function handleSteganoSubmit(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+
+            try {
+                const response = await fetch('/stegano_encrypt', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Gagal melakukan steganografi');
+                }
+
+                const filename = response.headers.get('content-disposition')?.split('filename=')[1] || 'stegano_result.png';
+                
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                a.remove();
+
+                alert('File berhasil dienkripsi dan didownload!');
+            } catch (error) {
+                console.error('Error:', error);
+                alert(error.message || 'Terjadi kesalahan saat melakukan steganografi');
+            }
+        }
+    </script>
+</body>
+</html>

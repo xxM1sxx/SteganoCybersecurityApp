@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <title>Landing Page</title>
+    <script src="https://cdn.jsdelivr.net/npm/particles.js"></script>
+</head>
+<body>
+    <div id="particles-js"></div>
+    <header>
+        <h1>Cryptography and Steganography</h1>
+        <p>Conceal your secrets with cryptography and steganography.</p>
+    </header>
+    <div class="buttons">
+        <a href="{{ url_for('encrypt') }}" class="button">Get Started with Encryption</a>
+        <a href="{{ url_for('decrypt') }}" class="button">Get Started with Decryption</a>
+    </div>
+
+    <div class="info-section">
+        <div class="tabs">
+            <button class="tab" onclick="switchContent('cryptography')">Cryptography</button>
+            <button class="tab active" onclick="switchContent('steganography')">Steganography</button>
+        </div>
+        <div id="cryptography" class="content">
+            <h2>What is Cryptography?</h2>
+            <p>Cryptography is the practice of securing communication and information through the use of codes and encryption. It ensures that data is protected from unauthorized access and can only be decrypted by someone with the correct key.</p>
+        </div>
+        <div id="steganography" class="content active">
+            <h2>What is Steganography?</h2>
+            <p>Steganography is the art of hiding messages or information within other non-secret text or data. It is commonly used to embed information in images, audio files, or even video files in a way that it is undetectable to the human eye.</p>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 Steganography Solutions. All rights reserved.</p>
+    </footer>
+
+    <script>
+        particlesJS.load('particles-js', "{{ url_for('static', filename='particles.json') }}", function() {
+            console.log('particles.js loaded');
+        });
+
+        function switchContent(contentId) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.content').forEach(content => content.classList.remove('active'));
+
+            document.querySelector(`[onclick="switchContent('${contentId}')"]`).classList.add('active');
+            document.getElementById(contentId).classList.add('active');
+        }
+    </script>
+</body>
+</html>
